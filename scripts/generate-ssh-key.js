@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-// Generate SSH host key for honeypot
+// Generate SSH host key for honeypot using Node.js crypto
 
-const { execSync } = require('child_process');
+const crypto = require('crypto');
 const fs = require('fs');
 const path = require('path');
 
@@ -21,22 +21,34 @@ if (fs.existsSync(KEY_FILE)) {
     process.exit(0);
 }
 
-console.log('Generating SSH host key...');
+console.log('Generating SSH host key using Node.js crypto...');
 
 try {
-    // Generate RSA key using ssh-keygen
-    execSync(`ssh-keygen -t rsa -b 2048 -f "${KEY_FILE}" -N "" -C "sshMON-honeypot"`, {
-        stdio: 'inherit'
+    // Generate RSA key pair
+    const { privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+        modulusLength: 2048,
+        publicKeyEncoding: {
+            type: 'spki',
+            format: 'pem'
+        },
+        privateKeyEncoding: {
+            type: 'pkcs1',
+            format: 'pem'
+        }
     });
 
-    // Set proper permissions
-    fs.chmodSync(KEY_FILE, 0o600);
+    // Write private key
+    fs.writeFileSync(KEY_FILE, privateKey, { mode: 0o600 });
+    console.log('✓ Private key generated:', KEY_FILE);
 
-    console.log('SSH host key generated successfully!');
-    console.log('Location:', KEY_FILE);
+    // Write public key
+    const pubKeyFile = KEY_FILE + '.pub';
+    fs.writeFileSync(pubKeyFile, publicKey, { mode: 0o644 });
+    console.log('✓ Public key generated:', pubKeyFile);
+
+    console.log('\nSSH host key generated successfully!');
+    console.log('You can now start the honeypot with: npm start');
 } catch (err) {
     console.error('Error generating SSH key:', err.message);
-    console.log('\nAlternative: You can generate the key manually with:');
-    console.log(`  ssh-keygen -t rsa -b 2048 -f "${KEY_FILE}" -N ""`);
     process.exit(1);
 }
