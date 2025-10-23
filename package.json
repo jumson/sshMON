@@ -1,0 +1,57 @@
+{
+  "name": "sshmon",
+  "version": "2.0.0",
+  "description": "Production-ready SSH honeypot with threat intelligence integration",
+  "main": "fakeServer/fakeSSH.js",
+  "scripts": {
+    "start": "node fakeServer/fakeSSH.js",
+    "dev": "NODE_ENV=development nodemon fakeServer/fakeSSH.js",
+    "test": "jest --coverage",
+    "generate-key": "node scripts/generate-ssh-key.js",
+    "update-geoip": "node scripts/update-geoip.js",
+    "lint": "eslint fakeServer/**/*.js",
+    "docker:build": "docker build -t sshmon:latest .",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "analyze-logs": "node scripts/analyze-logs.js"
+  },
+  "keywords": [
+    "honeypot",
+    "ssh",
+    "security",
+    "threat-intelligence",
+    "cybersecurity",
+    "defensive-security"
+  ],
+  "author": "Jon Munson <metamunson@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/sshMON.git"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  },
+  "dependencies": {
+    "ssh2": "^1.15.0",
+    "buffer-equal-constant-time": "^1.0.1",
+    "dotenv": "^16.3.1",
+    "winston": "^3.11.0",
+    "winston-daily-rotate-file": "^4.7.1",
+    "axios": "^1.6.2",
+    "geoip-lite": "^1.4.7",
+    "rate-limiter-flexible": "^3.0.3",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2",
+    "eslint": "^8.55.0",
+    "jest": "^29.7.0",
+    "@types/node": "^20.10.5"
+  },
+  "optionalDependencies": {
+    "maxmind": "^4.3.11"
+  }
+}

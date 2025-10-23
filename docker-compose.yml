@@ -1,0 +1,87 @@
+version: '3.8'
+
+services:
+  honeypot:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: sshmon:latest
+    container_name: sshmon-honeypot
+
+    # Port mapping (change left side for host port)
+    ports:
+      - "2222:22"  # Change to "22:22" for production (requires root or CAP_NET_BIND_SERVICE)
+
+    # Environment configuration
+    env_file:
+      - .env
+
+    environment:
+      - NODE_ENV=production
+      - TZ=UTC
+
+    # Volume mounts for persistent data
+    volumes:
+      - ./logs:/logs
+      - ./keys:/keys
+      - ./cache:/cache
+      - ./fakeServer:/app/fakeServer:ro  # Read-only for development
+
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+
+    # Drop all capabilities except necessary ones
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE  # Only if binding to port < 1024
+
+    # Read-only root filesystem (except mounted volumes)
+    read_only: true
+
+    # Temporary filesystems
+    tmpfs:
+      - /tmp:noexec,nosuid,nodev,size=100m
+      - /run:noexec,nosuid,nodev,size=50m
+      - /app/.npm:noexec,nosuid,nodev,size=10m
+
+    # Resource limits
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+    # Restart policy
+    restart: unless-stopped
+
+    # Logging configuration
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+        labels: "production"
+
+    # Health check
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 22 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+    # Network configuration
+    networks:
+      - honeypot-net
+
+networks:
+  honeypot-net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/24
