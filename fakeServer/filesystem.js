@@ -390,7 +390,7 @@ HISTSIZE=1000
 HISTFILESIZE=2000
 
 # Prompt
-PS1='${debian_chroot:+($debian_chroot)}\\u@${profile.hostname}:\\w\\$ '
+PS1='` + '${debian_chroot:+($debian_chroot)}\\u@' + profile.hostname + `:\\w\\$ '
 
 # Aliases
 alias ll='ls -alF'
